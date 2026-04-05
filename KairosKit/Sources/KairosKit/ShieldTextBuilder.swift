@@ -60,25 +60,10 @@ public enum ShieldTextBuilder {
                 currentTime: currentTime
             )
 
-        case .nightCooldown:
-            return buildCooldown(
-                title: "休息一下 🌙",
-                lastShieldTimestamp: lastShieldTimestamp,
-                currentTime: currentTime
-            )
-
-        case .nightQuota:
+        case .night:
             return ShieldText(
-                title: "额度使用中 ⏳",
+                title: "额度使用中 🌙",
                 subtitle: "请注意剩余时间",
-                primaryButtonLabel: "好的",
-                secondaryButtonLabel: nil
-            )
-
-        case .nightExhausted:
-            return ShieldText(
-                title: "今日额度已用完 🌙",
-                subtitle: "明天见！",
                 primaryButtonLabel: "好的",
                 secondaryButtonLabel: nil
             )

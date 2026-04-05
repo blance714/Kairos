@@ -28,9 +28,8 @@ public final class KairosSharedState: Sendable {
         static let currentMode = "currentMode"
         static let lastShieldTimestamp = "lastShieldTimestamp"
         static let lastUsageTimestamp = "lastUsageTimestamp"
-        static let nightQuotaActivated = "nightQuotaActivated"
-        static let nightQuotaDate = "nightQuotaDate"
-        static let nightQuotaExhausted = "nightQuotaExhausted"
+        static let wasInNightMode = "wasInNightMode"
+        static let lastManagedAppUsageTimestamp = "lastManagedAppUsageTimestamp"
         static let generalSelection = "generalSelection"
         static let novelSelection = "novelSelection"
         static let onboardingCompleted = "onboardingCompleted"
@@ -109,22 +108,23 @@ public final class KairosSharedState: Sendable {
         }
     }
 
-    public var nightQuotaActivated: Bool {
-        get { defaults.bool(forKey: Key.nightQuotaActivated) }
-        set { defaults.set(newValue, forKey: Key.nightQuotaActivated) }
+    /// Whether the previous mode was `.night` when sleep focus turned on.
+    /// Used by ModeResolver to determine if morning mode should activate.
+    public var wasInNightMode: Bool {
+        get { defaults.bool(forKey: Key.wasInNightMode) }
+        set { defaults.set(newValue, forKey: Key.wasInNightMode) }
     }
 
-    /// The date string (yyyy-MM-dd) when night quota was last activated, for daily reset.
-    public var nightQuotaDate: String? {
-        get { defaults.string(forKey: Key.nightQuotaDate) }
-        set { defaults.set(newValue, forKey: Key.nightQuotaDate) }
-    }
-
-    /// Whether the night quota has been fully exhausted today.
-    /// Set by the DeviceActivity monitor when both general and novel quotas are consumed.
-    public var nightQuotaExhausted: Bool {
-        get { defaults.bool(forKey: Key.nightQuotaExhausted) }
-        set { defaults.set(newValue, forKey: Key.nightQuotaExhausted) }
+    /// The most recent timestamp when a managed app was used.
+    /// Used to determine inactivity for night quota transition.
+    public var lastManagedAppUsageTimestamp: Date? {
+        get {
+            let interval = defaults.double(forKey: Key.lastManagedAppUsageTimestamp)
+            return interval > 0 ? Date(timeIntervalSince1970: interval) : nil
+        }
+        set {
+            defaults.set(newValue?.timeIntervalSince1970 ?? 0, forKey: Key.lastManagedAppUsageTimestamp)
+        }
     }
 
     // MARK: - App Selection (FamilyActivitySelection)

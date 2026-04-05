@@ -79,11 +79,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     // MARK: - Threshold Handlers
 
-    /// Fired when the combined usage threshold (normal / nightCooldown) is reached.
+    /// Fired when the combined usage threshold (normal mode) is reached.
     private func handleUsageThreshold() {
         let mode = sharedState.currentMode
-        guard mode == .normal || mode == .nightCooldown else {
-            logger.info("usageThreshold fired but mode is \(mode.rawValue) — ignoring")
+        guard mode == .normal else {
+            logger.info("usageThreshold fired but mode is \(mode.rawValue) -- ignoring")
             return
         }
 
@@ -97,10 +97,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(allCategories)
 
         sharedState.lastShieldTimestamp = Date()
+        sharedState.lastManagedAppUsageTimestamp = Date()
         logger.info("Cooldown lock applied: shielded \(allApps.count) apps")
     }
 
-    /// Fired when the general-app quota is exhausted in nightQuota mode.
+    /// Fired when the general-app quota is exhausted in night mode.
     private func handleGeneralQuotaReached() {
         let general = sharedState.generalSelection
         let generalApps = general?.applicationTokens ?? []
@@ -111,10 +112,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(generalCategories)
 
         logger.info("General quota exhausted: shielded \(generalApps.count) general apps")
-        checkAndExhaustAllQuotas()
     }
 
-    /// Fired when the novel-app quota is exhausted in nightQuota mode.
+    /// Fired when the novel-app quota is exhausted in night mode.
     private func handleNovelQuotaReached() {
         let novel = sharedState.novelSelection
         let novelApps = novel?.applicationTokens ?? []
@@ -137,22 +137,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         )
 
         logger.info("Novel quota exhausted: shielded \(novelApps.count) novel apps")
-        checkAndExhaustAllQuotas()
-    }
-
-    /// When both quotas have fired we mark the night as exhausted so `ModeResolver`
-    /// will transition to `.nightExhausted` on the next resolution.
-    private func checkAndExhaustAllQuotas() {
-        // Set the shared exhausted flag — ModeResolver will pick this up.
-        sharedState.nightQuotaExhausted = true
-        logger.info("Night quota fully exhausted — nightQuotaExhausted flag set")
     }
 
     // MARK: - Shield Cleanup
 
     /// Clear shields associated with the activity that just ended its interval.
     private func clearShields(for activity: DeviceActivityName) {
-        if activity == .normalMode || activity == .nightCooldown {
+        if activity == .normalMode {
             let store = ManagedSettingsStore(named: .cooldownLock)
             store.shield.applications = nil
             store.shield.applicationCategories = nil

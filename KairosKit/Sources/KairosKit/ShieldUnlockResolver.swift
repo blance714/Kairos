@@ -9,9 +9,6 @@ public enum UnlockAction: Sendable, Equatable {
 
     /// Clear the shield and restart monitoring.
     case unlock
-
-    /// Night cooldown transition: move from cooldown into quota mode.
-    case switchToQuota
 }
 
 // MARK: - ShieldUnlockResolver
@@ -30,14 +27,12 @@ public enum ShieldUnlockResolver {
     ///   - mode: The currently active `KairosMode`.
     ///   - sleepFocusOffTimestamp: When Sleep Focus turned off (morning mode).
     ///   - lastShieldTimestamp: When the shield was last activated (cooldown modes).
-    ///   - lastUsageTimestamp: When the last usage session ended (night cooldown → quota transition).
     ///   - currentTime: The point in time to evaluate against. Defaults to `Date()`.
     /// - Returns: The `UnlockAction` the extension should perform.
     public static func resolve(
         mode: KairosMode,
         sleepFocusOffTimestamp: Date?,
         lastShieldTimestamp: Date?,
-        lastUsageTimestamp: Date?,
         currentTime: Date = Date()
     ) -> UnlockAction {
         switch mode {
@@ -53,17 +48,8 @@ public enum ShieldUnlockResolver {
                 currentTime: currentTime
             )
 
-        case .nightCooldown:
-            return resolveNightCooldown(
-                lastShieldTimestamp: lastShieldTimestamp,
-                lastUsageTimestamp: lastUsageTimestamp,
-                currentTime: currentTime
-            )
-
-        case .nightQuota:
-            return .deny
-
-        case .nightExhausted:
+        case .night:
+            // Night quota mode: shields are per-group locks. No user-initiated unlock.
             return .deny
         }
     }
@@ -90,32 +76,5 @@ public enum ShieldUnlockResolver {
         let elapsed = currentTime.timeIntervalSince(shieldAt)
         let threshold = Double(KairosTime.cooldownMinutes) * 60
         return elapsed >= threshold ? .unlock : .deny
-    }
-
-    private static func resolveNightCooldown(
-        lastShieldTimestamp: Date?,
-        lastUsageTimestamp: Date?,
-        currentTime: Date
-    ) -> UnlockAction {
-        let cooldownThreshold = Double(KairosTime.cooldownMinutes) * 60
-
-        // Primary check: has the shield cooldown elapsed?
-        if let shieldAt = lastShieldTimestamp {
-            let shieldElapsed = currentTime.timeIntervalSince(shieldAt)
-            if shieldElapsed >= cooldownThreshold {
-                return .unlock
-            }
-        }
-
-        // Secondary check: has the user been inactive long enough to transition to quota?
-        if let usageAt = lastUsageTimestamp {
-            let inactivityThreshold = Double(KairosTime.inactivityForQuotaMinutes) * 60
-            let inactivityElapsed = currentTime.timeIntervalSince(usageAt)
-            if inactivityElapsed >= inactivityThreshold {
-                return .switchToQuota
-            }
-        }
-
-        return .deny
     }
 }

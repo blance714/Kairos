@@ -7,8 +7,6 @@ import ManagedSettings
 public extension DeviceActivityName {
     /// Normal mode: 15-min usage monitoring.
     nonisolated(unsafe) static let normalMode = Self("kairos.normalMode")
-    /// Night cooldown: same as normal but in night context.
-    nonisolated(unsafe) static let nightCooldown = Self("kairos.nightCooldown")
     /// Night quota: general app group usage monitoring.
     nonisolated(unsafe) static let nightQuotaGeneral = Self("kairos.nightQuotaGeneral")
     /// Night quota: novel app group usage monitoring.

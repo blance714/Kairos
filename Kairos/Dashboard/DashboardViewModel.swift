@@ -33,9 +33,8 @@ final class DashboardViewModel {
             sleepFocusOffTimestamp: state.sleepFocusOffTimestamp,
             isAtHome: state.isAtHome,
             lastShieldTimestamp: state.lastShieldTimestamp,
-            nightQuotaActivated: state.nightQuotaActivated,
-            nightQuotaDate: state.nightQuotaDate,
-            nightQuotaExhausted: state.nightQuotaExhausted
+            wasInNightMode: state.wasInNightMode,
+            lastManagedAppUsageTimestamp: state.lastManagedAppUsageTimestamp
         )
 
         let resolvedMode = ModeResolver.resolve(input)

@@ -21,12 +21,8 @@ enum DashboardDisplayBuilder {
             return "早晨模式 · 即将可用"
         case .normal:
             return "普通模式 · 正常使用中"
-        case .nightCooldown:
-            return "晚间冷却 · 使用中"
-        case .nightQuota:
-            return "晚间额度 · 额度使用中"
-        case .nightExhausted:
-            return "额度已用完 · 明天见"
+        case .night:
+            return "晚间模式 · 额度使用中"
         }
     }
 
@@ -56,15 +52,8 @@ enum DashboardDisplayBuilder {
             )
         case .normal:
             return ""
-        case .nightCooldown:
-            return cooldownDescription(
-                lastShieldTimestamp: lastShieldTimestamp,
-                currentTime: currentTime
-            )
-        case .nightQuota:
+        case .night:
             return "额度消耗中"
-        case .nightExhausted:
-            return "明天见"
         }
     }
 
@@ -78,17 +67,6 @@ enum DashboardDisplayBuilder {
             return "即将可用"
         }
         let unlockAt = offTime.addingTimeInterval(Double(KairosTime.morningLockMinutes) * 60)
-        return remainingDescription(unlockAt: unlockAt, currentTime: currentTime)
-    }
-
-    private static func cooldownDescription(
-        lastShieldTimestamp: Date?,
-        currentTime: Date
-    ) -> String {
-        guard let shieldTime = lastShieldTimestamp else {
-            return "即将可用"
-        }
-        let unlockAt = shieldTime.addingTimeInterval(Double(KairosTime.cooldownMinutes) * 60)
         return remainingDescription(unlockAt: unlockAt, currentTime: currentTime)
     }
 

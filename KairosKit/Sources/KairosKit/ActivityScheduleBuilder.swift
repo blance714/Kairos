@@ -23,8 +23,7 @@ public enum ActivityScheduleBuilder {
     ///   - generalCategories: `ActivityCategoryToken` set from the general selection.
     ///   - novelCategories: `ActivityCategoryToken` set from the novel selection.
     /// - Returns: A `(schedule, events)` tuple, or `nil` when no monitoring is
-    ///   required for `mode` (`.morning` and `.nightExhausted` lock via
-    ///   `ManagedSettingsStore` instead).
+    ///   required for `mode` (`.morning` locks via `ManagedSettingsStore` instead).
     public static func build(
         for mode: KairosMode,
         generalTokens: Set<ApplicationToken>,
@@ -33,7 +32,7 @@ public enum ActivityScheduleBuilder {
         novelCategories: Set<ActivityCategoryToken>
     ) -> (schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent])? {
         switch mode {
-        case .morning, .nightExhausted:
+        case .morning:
             // Apps are locked via ManagedSettingsStore; no usage monitoring required.
             return nil
 
@@ -45,15 +44,7 @@ public enum ActivityScheduleBuilder {
                 novelCategories: novelCategories
             )
 
-        case .nightCooldown:
-            return buildNightCooldown(
-                generalTokens: generalTokens,
-                novelTokens: novelTokens,
-                generalCategories: generalCategories,
-                novelCategories: novelCategories
-            )
-
-        case .nightQuota:
+        case .night:
             return buildNightQuota(
                 generalTokens: generalTokens,
                 novelTokens: novelTokens,
@@ -72,22 +63,6 @@ public enum ActivityScheduleBuilder {
         novelCategories: Set<ActivityCategoryToken>
     ) -> (schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent]) {
         let schedule = allDaySchedule()
-        let combinedApps = generalTokens.union(novelTokens)
-        let combinedCategories = generalCategories.union(novelCategories)
-        let event = usageThresholdEvent(
-            applications: combinedApps,
-            categories: combinedCategories
-        )
-        return (schedule, [.usageThreshold: event])
-    }
-
-    private static func buildNightCooldown(
-        generalTokens: Set<ApplicationToken>,
-        novelTokens: Set<ApplicationToken>,
-        generalCategories: Set<ActivityCategoryToken>,
-        novelCategories: Set<ActivityCategoryToken>
-    ) -> (schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent]) {
-        let schedule = nightSchedule()
         let combinedApps = generalTokens.union(novelTokens)
         let combinedCategories = generalCategories.union(novelCategories)
         let event = usageThresholdEvent(
@@ -122,7 +97,7 @@ public enum ActivityScheduleBuilder {
 
     // MARK: - Schedule Factories
 
-    /// All-day schedule: 00:00 – 23:59, repeating.
+    /// All-day schedule: 00:00 - 23:59, repeating.
     private static func allDaySchedule() -> DeviceActivitySchedule {
         let start = DateComponents(hour: 0, minute: 0)
         let end = DateComponents(hour: 23, minute: 59)
@@ -133,7 +108,7 @@ public enum ActivityScheduleBuilder {
         )
     }
 
-    /// Night schedule: 22:00 – 05:59 (next day), repeating.
+    /// Night schedule: 22:00 - 05:59 (next day), repeating.
     private static func nightSchedule() -> DeviceActivitySchedule {
         let start = DateComponents(hour: KairosTime.nightStartHour, minute: 0)
         let end = DateComponents(hour: 5, minute: 59)

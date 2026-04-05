@@ -40,9 +40,7 @@ struct ModeCardView: View {
         switch mode {
         case .morning: .orange
         case .normal: .yellow
-        case .nightCooldown: .indigo
-        case .nightQuota: .purple
-        case .nightExhausted: .gray
+        case .night: .indigo
         }
     }
 
@@ -64,26 +62,10 @@ struct ModeCardView: View {
                     endPoint: .bottomTrailing
                 )
             )
-        case .nightCooldown:
+        case .night:
             AnyShapeStyle(
                 LinearGradient(
                     colors: [.indigo.opacity(0.18), .blue.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-        case .nightQuota:
-            AnyShapeStyle(
-                LinearGradient(
-                    colors: [.purple.opacity(0.18), .indigo.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-        case .nightExhausted:
-            AnyShapeStyle(
-                LinearGradient(
-                    colors: [.gray.opacity(0.15), .gray.opacity(0.06)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -104,9 +86,7 @@ struct ModeCardView: View {
         VStack(spacing: 16) {
             ModeCardView(mode: .morning, statusMessage: "早晨模式 · 30分钟后可用")
             ModeCardView(mode: .normal, statusMessage: "普通模式 · 正常使用中")
-            ModeCardView(mode: .nightCooldown, statusMessage: "晚间冷却 · 使用中")
-            ModeCardView(mode: .nightQuota, statusMessage: "晚间额度 · 额度使用中")
-            ModeCardView(mode: .nightExhausted, statusMessage: "额度已用完 · 明天见")
+            ModeCardView(mode: .night, statusMessage: "晚间模式 · 额度使用中")
         }
         .padding()
     }

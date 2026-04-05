@@ -50,9 +50,8 @@ final class MonitorManager {
             sleepFocusOffTimestamp: sharedState.sleepFocusOffTimestamp,
             isAtHome: sharedState.isAtHome,
             lastShieldTimestamp: sharedState.lastShieldTimestamp,
-            nightQuotaActivated: sharedState.nightQuotaActivated,
-            nightQuotaDate: sharedState.nightQuotaDate,
-            nightQuotaExhausted: sharedState.nightQuotaExhausted
+            wasInNightMode: sharedState.wasInNightMode,
+            lastManagedAppUsageTimestamp: sharedState.lastManagedAppUsageTimestamp
         )
         let resolved = ModeResolver.resolve(input)
         currentMode = resolved
@@ -69,9 +68,9 @@ final class MonitorManager {
         let general = sharedState.generalSelection ?? FamilyActivitySelection()
         let novel = sharedState.novelSelection ?? FamilyActivitySelection()
 
-        // nightQuota needs two separate DeviceActivity monitors — one per quota group —
+        // Night mode needs two separate DeviceActivity monitors — one per quota group —
         // so that the extension receives distinct threshold events for each.
-        if currentMode == .nightQuota {
+        if currentMode == .night {
             startNightQuotaMonitoring(
                 general: general,
                 novel: novel
@@ -99,7 +98,7 @@ final class MonitorManager {
         }
     }
 
-    /// Start two separate monitors for nightQuota mode — one for each quota group.
+    /// Start two separate monitors for night mode — one for each quota group.
     private func startNightQuotaMonitoring(
         general: FamilyActivitySelection,
         novel: FamilyActivitySelection
@@ -140,7 +139,6 @@ final class MonitorManager {
     func stopMonitoring() {
         center.stopMonitoring([
             .normalMode,
-            .nightCooldown,
             .nightQuotaGeneral,
             .nightQuotaNovel,
         ])
@@ -167,13 +165,7 @@ final class MonitorManager {
             store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(allCategories)
             logger.info("Morning lock shield activated for \(allApps.count) apps")
 
-        case .nightExhausted:
-            let store = ManagedSettingsStore(named: .quotaLock)
-            store.shield.applications = allApps
-            store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(allCategories)
-            logger.info("Quota-exhausted lock shield activated for \(allApps.count) apps")
-
-        case .normal, .nightCooldown, .nightQuota:
+        case .normal, .night:
             // Shields for these modes are activated reactively by the monitor extension
             // when usage thresholds are reached.
             break
@@ -192,19 +184,17 @@ final class MonitorManager {
     }
 
     /// Map a mode to its corresponding `DeviceActivityName`.
-    /// Note: `.nightQuota` is handled separately via `startNightQuotaMonitoring(_:_:)`
+    /// Note: `.night` is handled separately via `startNightQuotaMonitoring(_:_:)`
     /// and will never reach this helper; the fallback returns `.nightQuotaGeneral`.
     private func deviceActivityName(for mode: KairosMode) -> DeviceActivityName {
         switch mode {
-        case .morning, .nightExhausted:
-            // These modes don't monitor; unreachable in practice because
-            // ActivityScheduleBuilder returns nil for them.
+        case .morning:
+            // Morning mode doesn't monitor; unreachable in practice because
+            // ActivityScheduleBuilder returns nil for it.
             return .normalMode
         case .normal:
             return .normalMode
-        case .nightCooldown:
-            return .nightCooldown
-        case .nightQuota:
+        case .night:
             return .nightQuotaGeneral
         }
     }

@@ -44,8 +44,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             let unlockAction = ShieldUnlockResolver.resolve(
                 mode: state.currentMode,
                 sleepFocusOffTimestamp: state.sleepFocusOffTimestamp,
-                lastShieldTimestamp: state.lastShieldTimestamp,
-                lastUsageTimestamp: state.lastUsageTimestamp
+                lastShieldTimestamp: state.lastShieldTimestamp
             )
 
             switch unlockAction {
@@ -53,12 +52,6 @@ class ShieldActionExtension: ShieldActionDelegate {
                 completionHandler(.close)
 
             case .unlock:
-                clearAllShields()
-                completionHandler(.close)
-
-            case .switchToQuota:
-                state.nightQuotaActivated = true
-                state.nightQuotaDate = todayString()
                 clearAllShields()
                 completionHandler(.close)
             }
@@ -72,11 +65,5 @@ class ShieldActionExtension: ShieldActionDelegate {
         ManagedSettingsStore(named: .morningLock).clearAllSettings()
         ManagedSettingsStore(named: .cooldownLock).clearAllSettings()
         ManagedSettingsStore(named: .quotaLock).clearAllSettings()
-    }
-
-    private func todayString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
 }

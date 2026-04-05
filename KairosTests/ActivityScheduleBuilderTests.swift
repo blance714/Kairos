@@ -25,14 +25,9 @@ struct ActivityScheduleBuilderTests {
 
     // MARK: - Nil cases
 
-    @Test("morning mode returns nil — no monitoring needed")
+    @Test("morning mode returns nil -- no monitoring needed")
     func morningMode_returnsNil() {
         #expect(build(for: .morning) == nil)
-    }
-
-    @Test("nightExhausted mode returns nil — apps are locked, no monitoring needed")
-    func nightExhaustedMode_returnsNil() {
-        #expect(build(for: .nightExhausted) == nil)
     }
 
     // MARK: - normal mode
@@ -42,7 +37,7 @@ struct ActivityScheduleBuilderTests {
         #expect(build(for: .normal) != nil)
     }
 
-    @Test("normal mode schedule covers all day — hour 0:00 to 23:59")
+    @Test("normal mode schedule covers all day -- hour 0:00 to 23:59")
     func normalMode_scheduleIsAllDay() {
         guard let (schedule, _) = build(for: .normal) else {
             Issue.record("Expected non-nil result for normal mode")
@@ -83,93 +78,46 @@ struct ActivityScheduleBuilderTests {
         #expect(event?.threshold.minute == KairosTime.usageThresholdMinutes)
     }
 
-    // MARK: - nightCooldown mode
+    // MARK: - night mode (quota)
 
-    @Test("nightCooldown mode returns non-nil result")
-    func nightCooldownMode_returnsResult() {
-        #expect(build(for: .nightCooldown) != nil)
+    @Test("night mode returns non-nil result")
+    func nightMode_returnsResult() {
+        #expect(build(for: .night) != nil)
     }
 
-    @Test("nightCooldown mode schedule starts at 22:00")
-    func nightCooldownMode_scheduleStartsAtNight() {
-        guard let (schedule, _) = build(for: .nightCooldown) else {
-            Issue.record("Expected non-nil result for nightCooldown mode")
+    @Test("night mode schedule starts at 22:00")
+    func nightMode_scheduleStartsAtNight() {
+        guard let (schedule, _) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         #expect(schedule.intervalStart.hour == KairosTime.nightStartHour)
         #expect(schedule.intervalStart.minute == 0)
     }
 
-    @Test("nightCooldown mode schedule ends at 5:59")
-    func nightCooldownMode_scheduleEndsAtDawn() {
-        guard let (schedule, _) = build(for: .nightCooldown) else {
-            Issue.record("Expected non-nil result for nightCooldown mode")
+    @Test("night mode schedule ends at 5:59")
+    func nightMode_scheduleEndsAtDawn() {
+        guard let (schedule, _) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         #expect(schedule.intervalEnd.hour == 5)
         #expect(schedule.intervalEnd.minute == 59)
     }
 
-    @Test("nightCooldown mode schedule repeats")
-    func nightCooldownMode_scheduleRepeats() {
-        guard let (schedule, _) = build(for: .nightCooldown) else {
-            Issue.record("Expected non-nil result for nightCooldown mode")
+    @Test("night mode schedule repeats")
+    func nightMode_scheduleRepeats() {
+        guard let (schedule, _) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         #expect(schedule.repeats == true)
     }
 
-    @Test("nightCooldown mode has exactly one event: usageThreshold")
-    func nightCooldownMode_hasUsageThresholdEvent() {
-        guard let (_, events) = build(for: .nightCooldown) else {
-            Issue.record("Expected non-nil result for nightCooldown mode")
-            return
-        }
-        #expect(events.count == 1)
-        #expect(events[.usageThreshold] != nil)
-    }
-
-    @Test("nightCooldown mode usageThreshold event threshold is 15 minutes")
-    func nightCooldownMode_usageThresholdIs15Min() {
-        guard let (_, events) = build(for: .nightCooldown) else {
-            Issue.record("Expected non-nil result for nightCooldown mode")
-            return
-        }
-        let event = events[.usageThreshold]
-        #expect(event?.threshold.minute == KairosTime.usageThresholdMinutes)
-    }
-
-    // MARK: - nightQuota mode
-
-    @Test("nightQuota mode returns non-nil result")
-    func nightQuotaMode_returnsResult() {
-        #expect(build(for: .nightQuota) != nil)
-    }
-
-    @Test("nightQuota mode schedule starts at 22:00")
-    func nightQuotaMode_scheduleStartsAtNight() {
-        guard let (schedule, _) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
-            return
-        }
-        #expect(schedule.intervalStart.hour == KairosTime.nightStartHour)
-        #expect(schedule.intervalStart.minute == 0)
-    }
-
-    @Test("nightQuota mode schedule ends at 5:59")
-    func nightQuotaMode_scheduleEndsAtDawn() {
-        guard let (schedule, _) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
-            return
-        }
-        #expect(schedule.intervalEnd.hour == 5)
-        #expect(schedule.intervalEnd.minute == 59)
-    }
-
-    @Test("nightQuota mode has exactly two events: generalQuota and novelQuota")
-    func nightQuotaMode_hasTwoQuotaEvents() {
-        guard let (_, events) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
+    @Test("night mode has exactly two events: generalQuota and novelQuota")
+    func nightMode_hasTwoQuotaEvents() {
+        guard let (_, events) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         #expect(events.count == 2)
@@ -177,20 +125,20 @@ struct ActivityScheduleBuilderTests {
         #expect(events[.novelQuota] != nil)
     }
 
-    @Test("nightQuota generalQuota event threshold is 20 minutes")
-    func nightQuotaMode_generalQuotaIs20Min() {
-        guard let (_, events) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
+    @Test("night mode generalQuota event threshold is 20 minutes")
+    func nightMode_generalQuotaIs20Min() {
+        guard let (_, events) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         let event = events[.generalQuota]
         #expect(event?.threshold.minute == KairosTime.generalQuotaMinutes)
     }
 
-    @Test("nightQuota novelQuota event threshold is 45 minutes")
-    func nightQuotaMode_novelQuotaIs45Min() {
-        guard let (_, events) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
+    @Test("night mode novelQuota event threshold is 45 minutes")
+    func nightMode_novelQuotaIs45Min() {
+        guard let (_, events) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         let event = events[.novelQuota]
@@ -209,20 +157,20 @@ struct ActivityScheduleBuilderTests {
         #expect(event?.applications.isEmpty == true)
     }
 
-    @Test("nightQuota generalQuota event only references general tokens")
-    func nightQuotaMode_generalQuotaReferencesGeneralTokensOnly() {
-        guard let (_, events) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
+    @Test("night mode generalQuota event only references general tokens")
+    func nightMode_generalQuotaReferencesGeneralTokensOnly() {
+        guard let (_, events) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         let generalEvent = events[.generalQuota]
         #expect(generalEvent?.applications.isEmpty == true)
     }
 
-    @Test("nightQuota novelQuota event only references novel tokens")
-    func nightQuotaMode_novelQuotaReferencesNovelTokensOnly() {
-        guard let (_, events) = build(for: .nightQuota) else {
-            Issue.record("Expected non-nil result for nightQuota mode")
+    @Test("night mode novelQuota event only references novel tokens")
+    func nightMode_novelQuotaReferencesNovelTokensOnly() {
+        guard let (_, events) = build(for: .night) else {
+            Issue.record("Expected non-nil result for night mode")
             return
         }
         let novelEvent = events[.novelQuota]
@@ -231,10 +179,10 @@ struct ActivityScheduleBuilderTests {
 
     // MARK: - Schedule symmetry
 
-    @Test("normal and nightCooldown produce different schedule intervals")
-    func normalVsNightCooldown_differentIntervals() {
+    @Test("normal and night produce different schedule intervals")
+    func normalVsNight_differentIntervals() {
         guard let (normalSchedule, _) = build(for: .normal),
-              let (nightSchedule, _) = build(for: .nightCooldown) else {
+              let (nightSchedule, _) = build(for: .night) else {
             Issue.record("Both modes should produce non-nil results")
             return
         }

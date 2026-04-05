@@ -29,16 +29,15 @@ docs/                # 技术文档
 - **测试文件导入**：由于 `MEMBER_IMPORT_VISIBILITY`，测试文件需显式 `import Foundation` 和 `import KairosKit`
 - **FamilyActivityPicker**：必须用 `.familyActivityPicker(isPresented:selection:)` modifier，不能直接嵌入 Form
 - **纯函数优先**：`ModeResolver`、`ShieldTextBuilder`、`ShieldUnlockResolver`、`ActivityScheduleBuilder`、`DashboardDisplayBuilder` 均为纯函数，方便测试
+- **Swift API 文档查询**：Apple API 经常变化，不要依赖训练数据。用 `general-purpose` subAgent + Xcode MCP `DocumentationSearch` 搜索文档，避免在主会话搜索占用上下文
 
-## 5 种模式
+## 3 种模式
 
 | 模式 | 触发条件 |
 |------|----------|
-| morning | 睡眠专注关闭后 1 小时内 |
+| morning | 晚上模式经睡眠专注后关闭，1 小时内锁定 |
 | normal | 默认状态，15 分钟使用 + 30 分钟冷却循环 |
-| nightCooldown | 在家 + 22:00 后，冷却中 |
-| nightQuota | 晚间额度激活（通用 20 分钟 / 小说 45 分钟） |
-| nightExhausted | 额度用完，当日不再解锁 |
+| night | 在家 + 22:00 后 + 30 分钟未使用，额度制（通用 20 分钟 / 小说 45 分钟） |
 
 ## 构建与测试
 

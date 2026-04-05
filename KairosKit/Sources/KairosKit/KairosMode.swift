@@ -2,28 +2,22 @@ import Foundation
 
 /// All possible modes the app can be in.
 public enum KairosMode: String, Sendable, CaseIterable {
-    /// After sleep focus turns off, apps locked until 1 hour passes.
+    /// After sleep focus turns off (from night mode), apps locked until 1 hour passes.
     case morning
 
-    /// Default daytime mode: 15-min usage → 30-min cooldown cycle.
+    /// Default daytime mode: 15-min usage -> 30-min cooldown cycle.
+    /// Also covers night-window behavior when the user has been active recently.
     case normal
 
-    /// Night mode: same 15/30 cycle but can transition to quota mode.
-    case nightCooldown
-
-    /// Night mode with quota: limited total usage (20min general / 45min novel).
-    case nightQuota
-
-    /// Night quota exhausted: all managed apps locked until next day.
-    case nightExhausted
+    /// Night quota mode: at home + night window + 30 min inactive.
+    /// General apps get 20 min, novel apps get 45 min. Each group locks independently.
+    case night
 
     public var displayName: String {
         switch self {
         case .morning: "早晨模式"
         case .normal: "普通模式"
-        case .nightCooldown: "晚间冷却"
-        case .nightQuota: "晚间额度"
-        case .nightExhausted: "额度已用完"
+        case .night: "晚间模式"
         }
     }
 
@@ -31,9 +25,7 @@ public enum KairosMode: String, Sendable, CaseIterable {
         switch self {
         case .morning: "sunrise.fill"
         case .normal: "sun.max.fill"
-        case .nightCooldown: "moon.fill"
-        case .nightQuota: "hourglass"
-        case .nightExhausted: "moon.zzz.fill"
+        case .night: "moon.fill"
         }
     }
 }

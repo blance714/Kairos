@@ -232,34 +232,37 @@ try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
 
 ## 四、模式实现映射
 
-### 早晨模式
+### 早晨模式（morning）
 
 ```
-触发: SleepFocusFilter.perform() 检测到睡眠专注关闭
-      → 写入 App Group: sleepFocusOff + timestamp
-      → Shield 扩展检查: 若 time >= 08:00 且距关闭 < 1h → 锁定管控应用
-解除: Shield 点击时检查距睡眠专注关闭已 ≥ 1h → 解锁，进入普通模式
+前提: 必须从晚上模式经过睡眠专注进入
+触发: 晚上模式中 → 睡眠专注开启 → 睡眠专注关闭
+      → SleepFocusFilter.perform() 写入 App Group: sleepFocusOff + timestamp
+      → 距关闭 < 1h → morningLock Store 锁定管控应用
+解除: Shield 点击时检查距睡眠专注关闭已 ≥ 1h → 解锁
+      → 根据条件进入普通模式或恢复晚上模式
+误触: 早晨模式期间重新开启睡眠专注 → sleepFocusActive=true → 暂停管控
+      → 再次关闭 → 新的 sleepFocusOffTimestamp → 重新计时
 ```
 
-### 普通模式
+### 普通模式（normal）
 
 ```
-触发: 不满足早晨/晚上条件
+触发: 默认状态（不满足早晨/晚上条件）
 监控: DeviceActivityEvent(apps, threshold: 15min)
       → eventDidReachThreshold → shield 应用
 冷却: ShieldAction 检查锁定 timestamp
       → ≥30min → 解除 shield, 重新开始监控
 ```
 
-### 晚上模式
+### 晚上模式（night）
 
 ```
-触发: CLMonitor(at_home) + time >= 22:00
-初始: 与普通模式相同 (15/30循环)
-激活: 用户打开管控App → Shield检查上次使用距今≥30min → 自动激活额度
+触发: CLMonitor(at_home) + time >= 22:00 + 距上次使用管控应用 ≥ 30min
 额度: DeviceActivityEvent(小说, threshold: 45min)
       DeviceActivityEvent(通用组, threshold: 20min)
-      → eventDidReachThreshold → shield 应用（当日不再解除）
+      → eventDidReachThreshold → 对应 Store 锁定（用完哪个锁哪个）
+额度保持: 额度通过各自的 ManagedSettingsStore 独立管理，当日有效
 ```
 
 ---
