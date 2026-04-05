@@ -1,0 +1,3 @@
+module KairosKit {
+    header "/Users/blance/Documents/Kairos/KairosKit/.build/index-build/arm64-apple-macosx/debug/KairosKit.build/include/KairosKit-Swift.h"
+}

@@ -1,32 +1,31 @@
-//
-//  KairosApp.swift
-//  Kairos
-//
-//  Created by blance on 04/04/2026.
-//
-
+import KairosKit
 import SwiftUI
-import SwiftData
 
 @main
 struct KairosApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
-        .modelContainer(sharedModelContainer)
+    }
+}
+
+// MARK: - RootView
+
+/// Decides whether to show onboarding or the main dashboard,
+/// observing `KairosSharedState` for the onboarding-completion flag.
+private struct RootView: View {
+
+    @State private var showOnboarding = !KairosSharedState.shared.onboardingCompleted
+
+    var body: some View {
+        if showOnboarding {
+            OnboardingContainerView(onComplete: {
+                showOnboarding = false
+            })
+        } else {
+            DashboardView()
+        }
     }
 }

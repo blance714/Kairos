@@ -7,7 +7,45 @@
 		<key>Kairos.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>KairosMonitor.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+		<key>KairosShieldAction.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>KairosShieldConfig.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>CE1B694A2F820B6F002C4A0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>CE8AA7EB2F81595500239EA1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>CE8AA7FC2F81595600239EA1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>CE8AA8062F81595600239EA1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
